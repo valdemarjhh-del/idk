@@ -1,3 +1,5 @@
+WARNING: This project has been created by ChatGPT. This is a note created by the user publishing this. The reason why ChatGPT has been used is because this project was only to be used for a personal projegt and I dont know how to code. 
+
 WEIGHTED RANDOM GENERATOR
 ========================
 
