@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101310">
+  <meta name="description" content="A simple weighted random picker with grouped variants, saved lists and offline support.">
+  <title>Weighted Random Generator</title>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" href="./assets/icon-192.png" type="image/png">
+  <link rel="stylesheet" href="./css/style.css">
+  <script defer src="./js/randomizer.js"></script>
+  <script defer src="./js/storage.js"></script>
+  <script defer src="./js/app.js"></script>
+</head>
+<body data-theme="dark">
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="Weighted Random Generator home">
+        <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span class="brand-copy">
+          <strong>Weighted Random</strong>
+          <small>GENERATOR</small>
+        </span>
+      </a>
+      <div class="topbar-actions">
+        <span class="offline-indicator"><span class="status-dot"></span> Works offline</span>
+        <button class="icon-button" id="theme-toggle" type="button" aria-label="Switch to light theme" title="Switch theme">☼</button>
+        <button class="button button-quiet install-button" id="install-button" type="button" hidden>Install app</button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <aside class="sidebar panel" aria-label="Saved lists">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">YOUR WORKSPACE</p>
+            <h2>Saved lists</h2>
+          </div>
+          <button class="icon-button plus-button" id="add-list" type="button" aria-label="Add a list" title="Add a list">+</button>
+        </div>
+        <nav id="list-nav" class="list-nav" aria-label="Your lists"></nav>
+        <div class="sidebar-bottom">
+          <button class="button button-quiet button-full" id="delete-list" type="button">Delete current list</button>
+          <div class="storage-note"><span class="storage-icon">▣</span><span>Lists are saved in this browser on this device.</span></div>
+        </div>
+      </aside>
+
+      <section class="editor-column">
+        <div class="page-heading">
+          <div>
+            <p class="eyebrow">BUILD YOUR POOL</p>
+            <h1>Weighted random generator</h1>
+            <p class="subtitle">Give each option a weight. Higher weights are more likely to be picked.</p>
+          </div>
+          <div class="heading-actions">
+            <button class="button button-quiet" id="import-button" type="button">Import</button>
+            <button class="button button-quiet" id="export-button" type="button">Export</button>
+            <input id="import-file" type="file" accept=".txt,.json,text/plain,application/json" hidden>
+          </div>
+        </div>
+
+        <section class="panel editor-panel">
+          <div class="editor-topline">
+            <label class="field-label" for="list-name">LIST NAME</label>
+            <span class="save-indicator" id="save-indicator"><span class="save-dot"></span> Saved automatically</span>
+          </div>
+          <input class="list-name-input" id="list-name" type="text" maxlength="60" value="My first list" aria-label="List name">
+          <div class="textarea-heading">
+            <label class="field-label" for="input-text">YOUR OPTIONS</label>
+            <span class="format-hint">One option per line · Name / Weight</span>
+          </div>
+          <textarea id="input-text" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="Apple / 5&#10;  Apple, Green / 2&#10;  Apple, Yellow / 5&#10;  Apple, Red / 3&#10;Banana / 2&#10;Orange / 4"></textarea>
+          <div class="editor-footer">
+            <span>Use indented lines for variants within a group.</span>
+            <span id="line-count">0 lines</span>
+          </div>
+          <details class="syntax-help">
+            <summary>How weights and variants work</summary>
+            <div class="help-content">
+              <p><strong>Simple option:</strong> <code>Banana / 2</code> adds Banana with weight 2.</p>
+              <p><strong>Group with variants:</strong> an unindented parent line sets the group's chance; indented lines are the possible results within that group.</p>
+              <pre>Apple / 5
+  Apple, Green / 2
+  Apple, Yellow / 5
+  Apple, Red / 3
+Banana / 2</pre>
+              <p>In this example, Apple has an overall weight of 5. Its variants are picked in a 2:5:3 ratio. A weight of 0 disables that option.</p>
+            </div>
+          </details>
+        </section>
+
+        <div class="editor-bottom-row">
+          <div class="validation-message" id="validation-message" role="status" aria-live="polite">Ready when you are.</div>
+          <button class="button button-quiet" id="export-backup" type="button">Export all lists</button>
+        </div>
+      </section>
+
+      <aside class="settings-column">
+        <section class="panel settings-panel">
+          <p class="eyebrow">PICK SETTINGS</p>
+          <h2>Configure draw</h2>
+          <label class="field-label" for="result-count">NUMBER OF RESULTS</label>
+          <input class="number-input" id="result-count" type="number" min="1" max="500" step="1" value="1">
+          <label class="toggle-row" for="no-duplicates">
+            <span><strong>No duplicates</strong><small>Each result can appear once</small></span>
+            <input id="no-duplicates" type="checkbox">
+            <span class="toggle-control" aria-hidden="true"></span>
+          </label>
+          <button class="button button-generate" id="generate-button" type="button">
+            <span aria-hidden="true">↗</span> Generate list
+          </button>
+          <p class="settings-footnote">Your list is saved automatically as you edit.</p>
+        </section>
+
+        <section class="panel output-panel">
+          <div class="output-heading">
+            <div>
+              <p class="eyebrow">THE DRAW</p>
+              <h2>Results</h2>
+            </div>
+            <span class="result-count-badge" id="result-count-badge">0</span>
+          </div>
+          <div class="empty-state" id="empty-state">
+            <span class="empty-sparkle" aria-hidden="true">✳</span>
+            <strong>Your results will appear here</strong>
+            <span>Enter options and press Generate list.</span>
+          </div>
+          <ol class="results-list" id="results" aria-live="polite" aria-label="Generated results"></ol>
+          <div class="output-actions">
+            <button class="button button-quiet" id="copy-all" type="button" disabled>Copy all</button>
+            <button class="button button-quiet" id="clear-results" type="button" disabled>Clear</button>
+          </div>
+          <p class="output-message" id="output-message" role="status" aria-live="polite"></p>
+        </section>
+
+        <section class="panel appearance-panel">
+          <div>
+            <p class="eyebrow">PREFERENCES</p>
+            <h2>Accent colour</h2>
+          </div>
+          <label class="colour-row" for="accent-colour"><span>Choose a colour</span><input id="accent-colour" type="color" value="#a7f36b" aria-label="Choose accent colour"></label>
+        </section>
+      </aside>
+    </main>
+    <footer class="app-footer"><span>Weighted Random Generator</span><span>Private by design · Your lists stay in this browser</span></footer>
+  </div>
+  <script>
+    // The app is static and has no third-party network dependencies.
+  </script>
+</body>
+</html>
